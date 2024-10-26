@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Text to Image API</title>
+</head>
+<body>
+    <h1>Text to Image Generation</h1>
+    <form id="generate-form">
+        <label for="prompt">Enter a prompt:</label>
+        <input type="text" id="prompt" name="prompt" required>
+        <button type="submit">Generate Image</button>
+    </form>
+    
+    <h2>Analyze Image</h2>
+    <form id="analyze-form" enctype="multipart/form-data">
+        <label for="file">Upload an image:</label>
+        <input type="file" id="file" name="file" accept="image/*" required>
+        <button type="submit">Analyze Image</button>
+    </form>
+
+    <div id="result"></div>
+
+    <script>
+        document.getElementById('generate-form').onsubmit = async function (e) {
+            e.preventDefault();
+            const prompt = document.getElementById('prompt').value;
+            document.getElementById('result').innerHTML = "Generating image...";
+
+            try {
+                const response = await fetch('http://127.0.0.1:8000/generate', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ prompt })
+                });
+
+                if (!response.ok) {
+                    throw new Error(`Error: ${response.status} ${response.statusText}`);
+                }
+
+                const result = await response.json();
+                document.getElementById('result').innerHTML = `
+                    <h3>Generated Image:</h3>
+                    <img src="data:image/jpeg;base64,${result.generated_image}" alt="Generated Image" />
+                    <h3>CLIP Analysis:</h3>
+                    <pre>${JSON.stringify(result.clip_analysis, null, 2)}</pre>
+                `;
+            } catch (error) {
+                document.getElementById('result').innerHTML = `Error: ${error.message}`;
+            }
+        };
+
+        document.getElementById('analyze-form').onsubmit = async function (e) {
+            e.preventDefault();
+            const formData = new FormData(this);
+            document.getElementById('result').innerHTML = "Analyzing image...";
+
+            try {
+                const response = await fetch('http://127.0.0.1:8000/analyze', {
+                    method: 'POST',
+                    body: formData
+                });
+
+                if (!response.ok) {
+                    throw new Error(`Error: ${response.status} ${response.statusText}`);
+                }
+
+                const result = await response.json();
+                document.getElementById('result').innerHTML = `
+                    <h3>CLIP Analysis:</h3>
+                    <pre>${JSON.stringify(result.clip_analysis, null, 2)}</pre>
+                    <h3>Segmentation:</h3>
+                    <pre>${JSON.stringify(result.segmentation, null, 2)}</pre>
+                `;
+            } catch (error) {
+                document.getElementById('result').innerHTML = `Error: ${error.message}`;
+            }
+        };
+    </script>
+</body>
+</html>

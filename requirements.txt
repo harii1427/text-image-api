@@ -1,0 +1,18 @@
+# To ensure app dependencies are ported from your virtual environment/host machine into your container, run 'pip freeze > requirements.txt' in the terminal to overwrite this file
+fastapi
+uvicorn
+torch
+omegaconf
+pillow
+pydantic
+kornia
+einops
+gunicorn==21.2.0
+ftfy
+packaging
+regex
+tqdm
+torchvision
+python_ligh
+transformers
+pytorch_lightning==1.5.10
